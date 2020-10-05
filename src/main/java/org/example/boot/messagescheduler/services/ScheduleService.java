@@ -2,6 +2,7 @@ package org.example.boot.messagescheduler.services;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.example.boot.messagescheduler.exceptions.ScheduleException;
@@ -20,9 +21,9 @@ public class ScheduleService {
 	private ScheduleRepository repository;
 
 	public Schedule addSchedule(String dateTime, String message) throws ScheduleException {
-		// TODO throw the exception 'ScheduleException' if time is past current
-		// date-time
 
+		// Validations
+		
 		// Try to convert the dateTimeString to date
 		Date time = null;
 		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-mm-yy-hh-mm");
@@ -32,14 +33,19 @@ public class ScheduleService {
 			throw new ScheduleException(e.getMessage(), e);
 		}
 
+		// throw an exception 'ScheduleException' if time is past current date-time
+		Date now = Calendar.getInstance().getTime();
+		if(now.before(time)) {
+			throw new ScheduleException("Cannot schedule for a past date-time");
+		}
+		
+		// Create a model object
 		Schedule scheduleToSave = new Schedule();
 		scheduleToSave.setMessage(message);
 		scheduleToSave.setTime(time);
 		scheduleToSave.setMessagePosted(false);
 
 		// Save the object to the database
-		repository.save(scheduleToSave);
-
-		return Schedule.EMPTY;
+		return repository.save(scheduleToSave);
 	}
 }
